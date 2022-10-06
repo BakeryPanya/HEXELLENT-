@@ -1,2 +1,0 @@
-client1はArduinoのserial通信をオンにしています
-client2はオフになっています
