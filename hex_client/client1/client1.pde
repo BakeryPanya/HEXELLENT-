@@ -232,7 +232,7 @@ void setup(){
 
 void draw(){
   background(255);
-  
+  if(not_aru == false){
   if ( ser.available() > 0) {  
      println("来てますよ");// 画面クリア
      String data = ser.readString(); // 文字列を受信
@@ -306,6 +306,7 @@ void draw(){
      }
      data = "";
      }
+  }
   
   
      
