@@ -30,37 +30,7 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define SW_DONUT 29
 #define SW_decide 31
 
-#define PHOyo4 36
-#define PHOyo3 35
-#define PHOyo2 34
-#define PHOyo1 33
-#define PHOta11 32
-#define PHOta10 31
-#define PHOta9 30
-#define PHOta8 29
-#define PHOta7 28
-#define PHOta6 27
-#define PHOta5 26
-#define PHOta4 25
-#define PHOta3 24
-#define PHOta2 23
-#define PHOta1 22
 #define TAPELED 3
-#define STPta1 4
-#define STPta2 5
-#define STPta3 6
-#define STPta4 7
-#define STPyo1 10
-#define STPyo2 11
-#define STPyo3 12
-#define STPyo4 13
-
-#define VR_PIN A0
-#define VR_VALUE 0
-
-
-#define MAS 50
-#define HALFMAS 25
 
 #define y_1 53
 #define y_2 52
@@ -78,105 +48,24 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define x_10 40
 #define x_11 38
 
-//==============ステッピングモータ用ディレイ==============
-void DELAY_WAIT(void){
-  for (int i = 0; i < (VR_VALUE /10 + 7) ; i++) delayMicroseconds(50);
-  /* VR_VALUE=0,delay略=100のとき、forループ100回で1回転なので
-   * delay略=50にすればforループ200回で1回転のはず */
-}
-//==============ステッピングモータ用ディレイ==============
+int STPta1 = 4;
+int STPta2 = 5;
+int STPta3 = 6;
+int STPta4 = 7;
+int APHASE  = 10;
+int AENBL   = 11;
+int BPHASE  = 12;
+int BENBL   = 13;
 
 
+int VR_PIN = A0;
+unsigned long VR_VALUE = 0;
 
-
-//==============縦に半マス移動==============
-void y_half(int dire){
-  switch(dire){
-    case 1://正転 -
-      for(int i=0; i<HALFMAS; i++){
-        
-        digitalWrite(STPta1,HIGH);
-        DELAY_WAIT();
-
-        digitalWrite(STPta3,HIGH);
-        DELAY_WAIT();
-
-        digitalWrite(STPta1,LOW);
-        DELAY_WAIT();
-
-        digitalWrite(STPta3,LOW);
-        DELAY_WAIT();
-      }
-      break;
-
-      
-    case -1://逆転 +
-      for(int i=0; i<HALFMAS; i++){
-        
-
-        digitalWrite(STPta3,LOW);
-        DELAY_WAIT();
-
-        digitalWrite(STPta1,LOW);
-        DELAY_WAIT();
-
-        digitalWrite(STPta3,HIGH);
-        DELAY_WAIT();
-
-        digitalWrite(STPta1,HIGH);
-        DELAY_WAIT();
-      }
-      break;
-  }
-}
-//==============縦に半マス移動==============
-
-//==============横に1マス移動==============
-void x_full(int dire){
-  switch(dire){
-    case 1://正転 -
-      for(int i=0; i<MAS; i++){
-        
-        digitalWrite(STPyo1,HIGH);
-        DELAY_WAIT();
-
-        digitalWrite(STPyo3,HIGH);
-        DELAY_WAIT();
-
-        digitalWrite(STPyo1,LOW);
-        DELAY_WAIT();
-
-        digitalWrite(STPyo3,LOW);
-        DELAY_WAIT();
-      }
-      break;
-
-      
-    case -1://逆転 +
-      for(int i=0; i<MAS; i++){
-        
-
-        digitalWrite(STPyo3,LOW);
-        DELAY_WAIT();
-
-        digitalWrite(STPyo1,LOW);
-        DELAY_WAIT();
-
-        digitalWrite(STPyo3,HIGH);
-        DELAY_WAIT();
-
-        digitalWrite(STPyo1,HIGH);
-        DELAY_WAIT();
-      }
-      break;
-  }
-  
-}
-//==============横に1マス移動==============
-
+int MAS = 25;
+int HALFMAS = 13;
 
 int STP_x =5;
-int STP_y =2;
+int STP_y =0;
 
 char data[93];
 int k= 0;
@@ -197,6 +86,131 @@ bool push_1 = true;
 bool bool_2 = true;
 
 
+void READ_VR(void)
+{
+  VR_VALUE = analogRead(VR_PIN);
+}
+
+//==============ステッピングモータ用ディレイ==============
+void DELAY_WAIT(void){
+  for (int i = 0; i < (VR_VALUE /10 + 7) ; i++) delayMicroseconds(100);
+  /* VR_VALUE=0,delay略=100のとき、forループ100回で1回転なので
+   * delay略=50にすればforループ200回で1回転のはず */
+}
+//==============ステッピングモータ用ディレイ==============
+
+
+
+//==============縦に半マス移動==============
+void y_half(int dire){
+
+  if(dire > 0){
+      //正転
+      while(dire != 0){
+        for(int i=0; i < HALFMAS; i++){
+          READ_VR();
+
+          digitalWrite(STPta1,HIGH);
+          DELAY_WAIT();
+
+          digitalWrite(STPta3,HIGH);
+          DELAY_WAIT();
+
+          digitalWrite(STPta1,LOW);
+          DELAY_WAIT();
+
+          digitalWrite(STPta3,LOW);
+          DELAY_WAIT();
+        }
+        dire--;
+      }
+
+      delay(500);
+  }
+
+  
+  if(dire < 0){    
+      //逆転
+      while(dire != 0){
+        for(int i=0; i < HALFMAS ; i++){
+          READ_VR();
+
+          digitalWrite(STPta3,LOW);
+          DELAY_WAIT();
+
+          digitalWrite(STPta1,LOW);
+          DELAY_WAIT();
+
+          digitalWrite(STPta3,HIGH);
+          DELAY_WAIT();
+
+          digitalWrite(STPta1,HIGH);
+          DELAY_WAIT();
+        }
+        dire++;
+      }
+
+      delay(500);
+
+  }
+}
+//==============縦に半マス移動==============
+
+
+
+//==============横に1マス移動==============
+void x_full(int dire){
+
+  if(dire > 0){
+    //正転
+    while(dire != 0){
+      for(int i=0; i<MAS; i++){
+        READ_VR();
+        digitalWrite(APHASE,HIGH);
+        DELAY_WAIT();
+
+        digitalWrite(BPHASE,HIGH);
+        DELAY_WAIT();
+
+        digitalWrite(APHASE,LOW);
+        DELAY_WAIT();
+
+        digitalWrite(BPHASE,LOW);
+        DELAY_WAIT();
+      }
+      dire--;
+    }
+  delay(500);
+  }
+  
+  if(dire < 0){
+    //逆転
+    while(dire != 0){
+      for(int i=0; i<MAS; i++){
+      READ_VR();
+
+      digitalWrite(BPHASE,LOW);
+      DELAY_WAIT();
+
+      digitalWrite(APHASE,LOW);
+      DELAY_WAIT();
+
+      digitalWrite(BPHASE,HIGH);
+      DELAY_WAIT();
+
+      digitalWrite(APHASE,HIGH);
+      DELAY_WAIT();
+
+      }
+      dire++;
+    }
+  delay(500);
+  }
+}
+//==============横に1マス移動==============
+
+
+
 /*
  * 200ループで1回転
  * 
@@ -214,17 +228,15 @@ void setup()
   pinMode(STPta4,OUTPUT);
   digitalWrite(STPta2,HIGH);
   digitalWrite(STPta4,HIGH);
-  pinMode(STPyo1,OUTPUT);
-  pinMode(STPyo2,OUTPUT);
-  pinMode(STPyo3,OUTPUT);
-  pinMode(STPyo4,OUTPUT);
-  digitalWrite(STPyo2,HIGH);
-  digitalWrite(STPyo4,HIGH);
-  for(int i=29; i<37; i++){
+  pinMode(APHASE,OUTPUT);
+  pinMode(AENBL,OUTPUT);
+  pinMode(BPHASE,OUTPUT);
+  pinMode(BENBL,OUTPUT);
+  digitalWrite(AENBL,HIGH);
+  digitalWrite(BENBL,HIGH);
+  for(int i=29; i<53; i++){
     pinMode(i,INPUT);
   }
-  pinMode(23,OUTPUT);
-  digitalWrite(23,HIGH);
   // These lines are specifically to support the Adafruit Trinket 5V 16 MHz.
   // Any other board, you can remove this part (but no harm leaving it):
 #if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
@@ -306,39 +318,44 @@ void loop(){
 //  }
     
   
-
+  int move_x;
+  int move_y;
   //ここにステッピングモータ作動動作を書きます
-  int move_x = STP_x - data[91];
-  int move_y = STP_y - data[92];
-  
+  if(data[91] != 'A'){
+    move_x = STP_x - (data[91] - '0');
+  }else{
+    move_x = STP_x - 10;
+  }
+
+  if(data[92] != 'A'){
+    move_y = STP_y - (data[92] - '0');
+  }else{
+    move_y = STP_y - 10;
+  }
+
+
+  //ここから実際に動かすとこ
   if(move_x == 0){
     
-    if(move_y < 0){
-      for(int i=0;i<(2*abs(move_y));i++)y_half(-1);
-    }else{
-      for(int i=0;i<(2*move_y);i++)y_half(1);
-    }
+    y_half(2*move_y);
+    
     
   }else if(move_x < 0){
     if(abs(move_x)%2 == 0){
         //xが偶数のとき
-        for(int i=0;i<abs(move_x);i++)x_full(1);
+        x_full(move_x);
         delay(500);
-        if(move_y < 0){
-          for(int i=0;i<(2*abs(move_y));i++)y_half(1);
-        }else{
-          for(int i=0;i<(2*move_y);i++)y_half(-1);
-        }
+        y_half(move_y);
       }else{
         //xが奇数のとき
-        for(int i=0;i<abs(move_x);i++)x_full(1);
+        x_full(move_x);
         delay(500);
         if(move_y < 0){
           y_half(1);
-          for(int i=0;i<(2*abs(move_y-1));i++)y_half(1);
+          y_half(2*(move_y-1));
         }else{
           y_half(-1);
-          for(int i=0;i<(2*(move_y-1));i++)y_half(-1);
+          y_half(2*(move_y-1));
         }
         
       }
@@ -347,33 +364,38 @@ void loop(){
 
       if(move_x%2 == 0){
         //xが偶数のとき
-        for(int i=0;i<move_x;i++)x_full(-1);
+        x_full(move_x);
         delay(500);
-        if(move_y < 0){
-          for(int i=0;i<(2*abs(move_y));i++)y_half(-1);
-        }else{
-          for(int i=0;i<(2*move_y);i++)y_half(1);
-        }
+        y_half(2*move_y);
+        
       }else{
         //xが奇数のとき
-        for(int i=0;i<move_x;i++)x_full(-1);
+        x_full(move_x);
         delay(500);
         if(move_y < 0){
           y_half(-1);
-          for(int i=0;i<(2*abs(move_y-1));i++)y_half(-1);
+          y_half(2*abs(move_y-1));
         }else{
           y_half(1);
-          for(int i=0;i<(2*(move_y-1));i++)y_half(1);
+          y_half(2*abs(move_y-1));
         }
         
       }
       
     }
-  
+  //ここまで実際に動かすとこ
 
-  STP_x = data[91];
-  STP_y = data[92];
+  if(data[91] != 'A'){
+    STP_x = data[91];
+  }else{
+    STP_x = 10;
+  }
 
+  if(data[92] != 'A'){
+    STP_y = data[92];
+  }else{
+    STP_y = 10;
+  }
   
   
   //dataはdata[91]はx,data[92]はyを格納しています。
@@ -492,41 +514,72 @@ void loop(){
   }else if(digitalRead(y_2)== HIGH && bool_2==true){
     if(digitalRead(x_1)== HIGH && bool_2==true){
       Serial.write("s,0,5,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_2)== HIGH ){
       Serial.write("s,1,6,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_3)== HIGH ){
       Serial.write("s,2,6,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_5)== HIGH){
       Serial.write("s,4,7,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_6)== HIGH){
       Serial.write("s,5,8,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_7)== HIGH){
       Serial.write("s,6,7,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_8)== HIGH){
       Serial.write("s,7,7,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_9)== HIGH ){
       Serial.write("s,8,6,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_10)== HIGH ){
       Serial.write("s,9,6,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_11)== HIGH ){
       Serial.write("s,10,5,\0");
-    }
-    bool_2 = false;
+       bool_2 = false;
      delay(10);
+    }
+    
     
   }else if(digitalRead(y_3)== HIGH && bool_2 == true){
     if(digitalRead(x_1)== HIGH){
       Serial.write("s,2,7,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_2)== HIGH){
       Serial.write("s,3,8,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_3)== HIGH){
       Serial.write("s,4,8,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_5)== HIGH){
       Serial.write("s,6,8,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_6)== HIGH){
       Serial.write("s,7,8,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_7)== HIGH){
       Serial.write("s,8,7,\0");
+       bool_2 = false;
+     delay(10);
     }
     bool_2 = false;
      delay(10);
@@ -534,25 +587,34 @@ void loop(){
   }else if(digitalRead(y_4) && bool_2 == true){
     if(digitalRead(x_1)== HIGH){
       Serial.write("s,4,9,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_2)== HIGH){
       Serial.write("s,5,10,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(x_3)== HIGH){
       Serial.write("s,6,9,\0");
+       bool_2 = false;
+     delay(10);
     }
 
-     bool_2 = false;
-      delay(10);
+     
   }else if(digitalRead(x_1)== LOW && digitalRead(x_2)== LOW && digitalRead(x_3)== LOW && digitalRead(x_5)== LOW && digitalRead(x_6)== LOW && digitalRead(x_7)== LOW && digitalRead(x_8)== LOW && digitalRead(x_9)== LOW && digitalRead(x_10)== LOW && digitalRead(x_11)== LOW && bool_2 == true){
     if(digitalRead(y_1)== HIGH){
       Serial.write("s,3,6,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(y_2)== HIGH){
       Serial.write("s,3,7,\0");
+       bool_2 = false;
+     delay(10);
     }else if(digitalRead(y_3)== HIGH){
       Serial.write("s,3,8,\0");
-    }
-
-    bool_2 = false;
+       bool_2 = false;
      delay(10);
+    }
+    
   }else if(digitalRead(y_4)== LOW &&digitalRead(y_3)== LOW &&digitalRead(y_1)== LOW &&digitalRead(y_2)== LOW && digitalRead(x_1)== LOW && digitalRead(x_2)== LOW && digitalRead(x_3)== LOW && digitalRead(x_5)== LOW && digitalRead(x_6)== LOW && digitalRead(x_7)== LOW && digitalRead(x_8)== LOW && digitalRead(x_9)== LOW && digitalRead(x_10)== LOW && digitalRead(x_11)== LOW && bool_2 == false){
     bool_2 = true;
      delay(10);

@@ -1,7 +1,8 @@
 import controlP5.*;
 import processing.net.*;
 import processing.serial.*;
-//Serial ser;
+
+Serial ser;
 Client client;
 int[][] area = new int[11][11];
 //client rotateなしとする
@@ -9,7 +10,9 @@ int[][] area = new int[11][11];
 
 
 
-
+String[] comPort = ser.list();
+int num = comPort.length;
+int err_num=0;
 //描画必要変数
 float x;
 float y;
@@ -42,6 +45,8 @@ String turn = "0";
 String myturn;
 String pl1_sq ="0";
 String pl2_sq = "0";
+Textfield t1;
+String input = "";
 
 int dir=0;
 
@@ -50,8 +55,13 @@ boolean push_1 = true;
 boolean push_2 = true;
 boolean push_3 = true;
 boolean push_4 = true;
+boolean not_aru = false;
+boolean not_serv = false;
+boolean toggle1 = true;
 
 int mode=0;
+int str_ok = 2;
+int ran_ok = 1;
 
 PImage title ;
 PImage cursor;
@@ -72,15 +82,19 @@ PImage random;
 PImage vs;
 PImage arrow;
 PImage b_mode;
+PFont font;
 
 ControlP5 cp5;
+ControlP5 cp6;
+ControlP5 cp7;
 
 //ここまで
 //
 
 void setup(){
   fullScreen();
-  textFont(createFont("Square.ttf",64));
+  font = createFont("Square.ttf",64);
+  textFont(font);
   absx = width/4;
   absy = (height/4)+60;
   p1_col = #FF2E63;
@@ -115,6 +129,8 @@ void setup(){
  
   cursor(cursor);
   cp5 = new ControlP5(this);
+  cp6 = new ControlP5(this);
+  cp7 = new ControlP5(this);
   x1=absx;
   y1=absy;
   
@@ -165,91 +181,131 @@ void setup(){
   y1 +=10*sqrt(3);
   }
   
-   client = new Client(this,"127.0.0.1",20000);
+   
    
    
    
    cp5.addButton("start")
     .setPosition(width/2-150,height/2+100)
+    .setColorBackground(color(255)) 
+     .setColorForeground(color(100,100,100))   
     .setSize(250,100);
     
+   t1 = cp6.addTextfield("serverip") 
+     .setPosition(300,height/1.6)
+     .setSize(200,50)
+     .setFont(font)
+     .setFocus(true)
+     .setAutoClear(false);
     
+  
+  cp7.addToggle("toggle1")
+     .setPosition((width/2)+500,height/2+150)
+     .setSize(200,30)
+     .setValue(true)
+     .setMode(ControlP5.SWITCH)
+     .getCaptionLabel()
+     .setVisible(false);
+     
+   //ser = new Serial(this,"COM6", 9600);
     
-  //ser = new Serial(this,"COM6",9600);
-  delay(1000);
+  for (int i=0; i<num; i++) {
+    print(comPort[i]+"     ");
+    try {
+      ser = new Serial(this, comPort[i], 9600);
+      delay(300);
+      println("O.K---");
+    }
+    catch(Exception e) {
+      println("failed");
+      err_num+=1;
+      continue;
+    }
+  }
   
-  String s="100,100,100,100,100,\n";
-  client.write(s);
-  
+  if(err_num==num){
+    not_aru = true;
+    print("error!!!");
+  }
    
 }
 
 void draw(){
   background(255);
   
-  //if ( ser.available() > 0) {            // 画面クリア
-  //   String data = ser.readString(); // 文字列を受信
+  if ( ser.available() > 0) {  
+     println("来てますよ");// 画面クリア
+     String data = ser.readString(); // 文字列を受信
      
-  //   String[] data_sp = splitTokens(data,",");
-  //   println("なんか来てる");// 文字サイズ
-  //   println(data);           // 画面に文字表示
-  //   if(data_sp.length == 2 || data_sp.length == 3){//data落ちは不可
-  //   switch(data_sp[0]){
-  //     case "b":
-  //       switch(data_sp[1]){
-  //        case "1":
-  //          dir = 1;
-  //          break;
-  //        case "5":
-  //          dir = 2;
-  //          break;
-  //        case "6":
-  //          dir = 3;
-  //          break;
-  //        case "2":
-  //          dir = 4;
-  //          break;
-  //        case "3":
-  //          dir = 5;
-  //          break;
-  //        case "4":
-  //          dir = 6;
-  //          break;
-  //        case "7":
-  //          mode = 3;
-  //          break;
-  //        case "8":
-  //          mode = 2;
-  //          break;
-  //        case "9":
-  //          mode = 1;
-  //          break;
-  //        case "0":
-  //          String a=str(dx)+","+str(dy)+","+str(mode)+","+str(dir)+","+str(pl_color)+","+"\n";
-  //          println(a);
-  //          client.write(a);
-  //          println("serverにsend");
-  //          break;
-            
-  //        default:
-  //          break;
+     String[] data_sp = splitTokens(data,",");
+     println("なんか来てる");// 文字サイズ
+     println(data);           // 画面に文字表示
+     if(data_sp.length == 2 || data_sp.length == 3){//data落ちは不可
+     switch(data_sp[0]){
+       case "b":
+         switch(data_sp[1]){
+          case "1":
+            dir = 1;
+            break;
+          case "5":
+            dir = 2;
+            break;
+          case "6":
+            dir = 3;
+            break;
+          case "2":
+            dir = 4;
+            break;
+          case "3":
+            dir = 5;
+            break;
+          case "4":
+            dir = 6;
+            break;
+          case "7":
+            mode = 3;
+            break;
+          case "8":
+            mode = 2;
+            break;
+          case "9":
+            mode = 1;
+            break;
+          case "0":
+            if((ran_ok > 0 || mode!=3)&&(str_ok > 0 || mode!=2)){
+            String a=str(dx)+","+str(dy)+","+str(mode)+","+str(dir)+","+str(pl_color)+","+"\n";
+            println(a);
+            client.write(a);
+            println("serverにsend");
           
-  //      }//bのやることおわり
-  //     break;
+            if(mode==3){
+              ran_ok -=1;
+            }else if(mode == 2){
+              str_ok -=1;
+            }
+            //println("c");
+            }
+            break;
+            
+          default:
+            break;
+          
+        }//bのやることおわり
+       break;
         
-  //    case "s":
-  //      if(data_sp.length == 3){
-  //      dx = int(data_sp[1]);
-  //      dy = int(data_sp[2]);
-  //      }
-  //      break;
+      case "s":
+        if(data_sp.length == 3){
+        dx = int(data_sp[1]);
+        dy = int(data_sp[2]);
+        }
+        break;
         
-  //    default:
-  //      break;
-  //   }
-  //   }
-  //   data = "";
-  //   }
+      default:
+        break;
+     }
+     }
+     data = "";
+     }
   
   
      
@@ -260,10 +316,14 @@ void draw(){
     fill(0);
     textSize(50);
     //text("Hexellent!!!-betaEdition-",200,200);
-    image(title ,(width/2)-800,200);
+    image(title ,(width/2)-800,100);
     fill(255);
     textSize(150);
     text("PUSH HERE",width/2-240,height/2+250);
+    fill(p1_col);
+    text("PL1",width/2+300,height/2+200);
+    fill(p2_col);
+    text("PL2",width/2+750,height/2+200);
     pop();
    
     
@@ -271,6 +331,7 @@ void draw(){
     
     
   }else if(scene == 1){
+    
      background(haikei);
      //枠などの表示
        image(waku,(width/10)+180,(height/15));
@@ -278,7 +339,21 @@ void draw(){
      //
     
     if(once == true){
+      //
+         if(toggle1) {
+        pl_color = 1;
+        dx=5;
+        dy=10;
+      } else {
+        pl_color = 2;
+        dx=5;
+        dy=0;
+      }
+      //
+     
     cp5.getController("start").remove();
+    cp6.getController("serverip").remove();
+    cp7.getController("toggle1").remove();
     once=false;
     }
     x1 = absx;
@@ -379,7 +454,8 @@ void draw(){
      server_send();
      
      push();//textarea
-     
+     fill(area_col,30);
+     //rect(530,600,500,300);
      fill(255);
      
      textSize(300);
@@ -447,16 +523,16 @@ void draw(){
     //text(pl1_sq+"vs"+pl2_sq,300,600);
     if(int(pl1_sq)>int(pl2_sq)){
       if(pl_color == 1){
-        image(draw,(width/2)-500,(height/2)-450);
+        image(win,(width/2)-500,(height/2)-450);
       }else{
-        image(draw,(width/2)-500,(height/2)-450);
+        image(lose,(width/2)-500,(height/2)-450);
       }
     
       }else if(int(pl1_sq)<int(pl2_sq)){
         if(pl_color == 2){
-          image(draw,(width/2)-500,(height/2)-450);
+          image(win,(width/2)-500,(height/2)-450);
         }else{
-          image(draw,(width/2)-700,(height/2)-450);
+          image(lose,(width/2)-700,(height/2)-450);
         }
       }else{
         image(draw,(width/2)-350,(height/2)-200);
@@ -467,6 +543,19 @@ void draw(){
 }
 
 public void start(int Value) {
+  try {
+      client = new Client(this,input,20000);
+      String s="100,100,100,100,100,\n";
+      client.write(s);
+      println("O.K");
+      
+      
+    }
+    catch(Exception e) {
+      not_serv = true;
+      println("failed");
+      
+    }
   scene=1;
   Value=2;
 }
@@ -542,7 +631,10 @@ void clientEvent(Client c){
      println("---");
     aru_map+=aite[0]+aite[1];
     aru_map+="\0";
-    //ser.write(aru_map);
+    if(not_aru ==false){
+      println("send");
+      ser.write(aru_map);
+    }
     
     println(aru_map);
     
@@ -769,12 +861,22 @@ void server_send(){
      
      if(keyPressed == true && push_3 == true){
        if(key=='0'){
+          if((ran_ok > 0 || mode!=3)&&(str_ok > 0 || mode!=2)){
           String a=str(dx)+","+str(dy)+","+str(mode)+","+str(dir)+","+str(pl_color)+","+"\n";
           println(a);
           client.write(a);
           println("serverにsend");
+          
+          if(mode==3){
+            ran_ok -=1;
+          }else if(mode == 2){
+            str_ok -=1;
+          }
           //println("c");
+          }
+          
        }
+       
        push_3=false;
      }
      

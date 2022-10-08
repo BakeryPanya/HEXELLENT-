@@ -9,7 +9,7 @@ int x;//x座標格納
 int y;//y座標格納
 int act;//act確認 10
 int pl;//pl確認
-int dir;//方向
+int dir;//方向 
 int p1x=5;
 int p1y=10;
 int p2x=5;
@@ -136,6 +136,26 @@ void draw(){
     System.out.println(map);
     System.out.println("clientにsend");
     server.write(map);
+    
+    if(turn>=21){
+      for(int m=0;m<11;m++){
+      for(int n=0;n<11;n++){
+        area[m][n] = 0;
+         
+      }
+      }
+         p1x=5;
+            p1y=10;
+        p2x=5;
+         p2y=0;
+         state=0;//state
+         pl1_sq=0;
+         pl2_sq=0;
+         myturn=1;
+       turn=1;
+
+      
+    }
       
      
     }
