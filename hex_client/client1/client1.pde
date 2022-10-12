@@ -359,6 +359,7 @@ void draw(){
      //枠などの表示
        image(waku,(width/10)+180,(height/15));
        image(vs,(width/2)-300,(height/20)-100);
+       
      //
     
     if(once == true){
@@ -548,14 +549,14 @@ void draw(){
       if(pl_color == 1){
         image(win,(width/2)-500,(height/2)-450);
       }else{
-        image(lose,(width/2)-500,(height/2)-450);
+        image(lose,(width/2)-680,(height/2)-250);
       }
     
       }else if(int(pl1_sq)<int(pl2_sq)){
         if(pl_color == 2){
           image(win,(width/2)-500,(height/2)-450);
         }else{
-          image(lose,(width/2)-700,(height/2)-450);
+          image(lose,(width/2)-680,(height/2)-250);
         }
       }else{
         image(draw,(width/2)-350,(height/2)-200);
