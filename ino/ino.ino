@@ -32,21 +32,11 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 #define TAPELED 3
 
-#define y_1 53
-#define y_2 52
-#define y_3 51
-#define y_4 50
+int y[4] = {53, 52, 51, 50};
 
-#define x_1 49
-#define x_2 48
-#define x_3 47
-#define x_5 45
-#define x_6 44
-#define x_7 43
-#define x_8 42
-#define x_9 41
-#define x_10 40
-#define x_11 38
+int x[11] = {49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 38};
+
+#define NOREAD 10
 
 int STPta1 = 4;
 int STPta2 = 5;
@@ -74,17 +64,24 @@ int j=0;
 char buf_x;
 char buf_y;
 
-int x1=0;
-int x2=0;
+//int x1=0;
+//int x2=0;
 
-int y1=0;
-int y2=0;
+//int y1=0;
+//int y2=0;
 
 int xy[11][11] ={{0,0}};
 
 bool push_1 = true;
 bool bool_2 = true;
 
+int x_yomi[11] = {0};
+int y_yomi[4] = {0};
+
+int x_mae[11] = {0};
+int y_mae[4] = {0};
+
+int NOREAD_count = 5;
 
 void READ_VR(void)
 {
@@ -104,8 +101,8 @@ void DELAY_WAIT(void){
 //==============縦に半マス移動==============
 void y_half(int dire){
 
-  if(dire > 0){
-      //正転
+  if(dire < 0){
+      //下に移動
       while(dire != 0){
         for(int i=0; i < HALFMAS; i++){
           READ_VR();
@@ -122,15 +119,15 @@ void y_half(int dire){
           digitalWrite(STPta3,LOW);
           DELAY_WAIT();
         }
-        dire--;
+        dire++;
       }
 
       delay(500);
   }
 
   
-  if(dire < 0){    
-      //逆転
+  if(dire > 0){    
+      //上に移動
       while(dire != 0){
         for(int i=0; i < HALFMAS ; i++){
           READ_VR();
@@ -147,7 +144,7 @@ void y_half(int dire){
           digitalWrite(STPta1,HIGH);
           DELAY_WAIT();
         }
-        dire++;
+        dire--;
       }
 
       delay(500);
@@ -161,8 +158,8 @@ void y_half(int dire){
 //==============横に1マス移動==============
 void x_full(int dire){
 
-  if(dire > 0){
-    //正転
+  if(dire < 0){
+    //左に移動
     while(dire != 0){
       for(int i=0; i<MAS; i++){
         READ_VR();
@@ -178,13 +175,13 @@ void x_full(int dire){
         digitalWrite(BPHASE,LOW);
         DELAY_WAIT();
       }
-      dire--;
+      dire++;
     }
   delay(500);
   }
   
-  if(dire < 0){
-    //逆転
+  if(dire > 0){
+    //右に移動
     while(dire != 0){
       for(int i=0; i<MAS; i++){
       READ_VR();
@@ -202,7 +199,7 @@ void x_full(int dire){
       DELAY_WAIT();
 
       }
-      dire++;
+      dire--;
     }
   delay(500);
   }
@@ -274,7 +271,71 @@ void loop(){
     
      // 文字数が93以上 or 終端文字が来たら
     if (k > 93 || data[k] == '\0') {
-      
+
+
+ 
+    
+  //step
+  int move_x = 0;
+  int move_y = 0;
+  int data_x = 0;
+  int data_y = 0;
+  //ここにステッピングモータ作動動作を書きます
+
+ 
+  //'を"にしました
+  switch(data[91]){
+    case 'A':
+      data_x = 10;
+      break;
+    default:
+      data_x = (data[91] - '0');
+      break;
+  }
+
+  switch(data[92]){
+    case 'A':
+      data_y = 10;
+      break;
+    default:
+      data_y = (data[92] - '0');
+      break;
+  }
+
+  move_x = data_x - STP_x;
+  move_y = data_y - STP_y;
+
+
+  if((move_x>0 && STP_x>=5) || (move_x >(6-STP_x) && STP_x < 5)){
+    if(abs(STP_x-5) <= abs(data_x-5)){
+      int i = abs(STP_x-5) - abs(data_x-5);
+      y_half((2*move_y)-i);
+    }else{
+      int i = abs(STP_x-5) - abs(data_x-5);
+      y_half((2*move_y)-i);
+    }
+    x_full(move_x);
+  }else{
+    x_full(move_x);
+    if(abs(STP_x-5) <= abs(data_x-5)){
+      int i = abs(STP_x-5) - abs(data_x-5);
+      y_half((2*(move_y))-i);
+    }else{
+      int i = abs(STP_x-5) - abs(data_x-5);
+      y_half((2*(move_y))-i);
+    }
+  }
+
+
+  STP_x = data_x;
+
+  STP_y = data_y;
+  
+  
+  //dataはdata[91]はx,data[92]はyを格納しています。
+  //stepここまで
+
+        //led
       for(j=0; j<NUMPIXELS; j++) { // For each pixel...
       // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
       // Here we're using a moderately bright green color:
@@ -283,13 +344,13 @@ void loop(){
         pixels.setPixelColor(j, pixels.Color(30, 30, 30));
         break;
       case 'b'://1pのマス
-        pixels.setPixelColor(j, pixels.Color(50, 0, 0));
+        pixels.setPixelColor(j, pixels.Color(70, 0, 0));
         break;
       case 'c'://2pのマス
-        pixels.setPixelColor(j, pixels.Color(0, 0, 50));//青かなあ
+        pixels.setPixelColor(j, pixels.Color(0, 50, 50));//青かなあ
         break;
       default://ダメなとき
-        pixels.setPixelColor(j, pixels.Color(0, 50, 50));//紫？？
+        pixels.setPixelColor(j, pixels.Color(100, 0, 100));//紫？？
         break;
     }
 
@@ -299,107 +360,10 @@ void loop(){
 
     
     delay(10); // Pause before next pass through loop
-    
   }
+  //led
+
   
-//  int cnt = 0;
-//  for(int a=0;a<11;a++){
-//    if(a<6){
-//      for(int b=0;b<a+6;b++){
-//        xy[a][b] = data[cnt];
-//        cnt+=1;
-//      }
-//    }else{
-//      for(int b=0;b<15-a;b++){
-//        xy[a][b] = data[cnt];
-//        cnt+=1;
-//      }
-//    }
-//  }
-    
-  
-  int move_x;
-  int move_y;
-  //ここにステッピングモータ作動動作を書きます
-  if(data[91] != 'A'){
-    move_x = STP_x - (data[91] - '0');
-  }else{
-    move_x = STP_x - 10;
-  }
-
-  if(data[92] != 'A'){
-    move_y = STP_y - (data[92] - '0');
-  }else{
-    move_y = STP_y - 10;
-  }
-
-
-  //ここから実際に動かすとこ
-  if(move_x == 0){
-    
-    y_half(2*move_y);
-    
-    
-  }else if(move_x < 0){
-    if(abs(move_x)%2 == 0){
-        //xが偶数のとき
-        x_full(move_x);
-        delay(500);
-        y_half(move_y);
-      }else{
-        //xが奇数のとき
-        x_full(move_x);
-        delay(500);
-        if(move_y < 0){
-          y_half(1);
-          y_half(2*(move_y-1));
-        }else{
-          y_half(-1);
-          y_half(2*(move_y-1));
-        }
-        
-      }
-      
-    }else{//move_x>0パターン
-
-      if(move_x%2 == 0){
-        //xが偶数のとき
-        x_full(move_x);
-        delay(500);
-        y_half(2*move_y);
-        
-      }else{
-        //xが奇数のとき
-        x_full(move_x);
-        delay(500);
-        if(move_y < 0){
-          y_half(-1);
-          y_half(2*abs(move_y-1));
-        }else{
-          y_half(1);
-          y_half(2*abs(move_y-1));
-        }
-        
-      }
-      
-    }
-  //ここまで実際に動かすとこ
-
-  if(data[91] != 'A'){
-    STP_x = data[91];
-  }else{
-    STP_x = 10;
-  }
-
-  if(data[92] != 'A'){
-    STP_y = data[92];
-  }else{
-    STP_y = 10;
-  }
-  
-  
-  //dataはdata[91]はx,data[92]はyを格納しています。
-
   //バッファの要素番号をリセットします
      k=0;
   //ここまで
@@ -468,158 +432,196 @@ void loop(){
   //
 
   //ネオジムセンサコマンド
+  
+  for(int i=0; i<11; i++){
+    x_mae[i]=x_yomi[i];
+    x_yomi[i]=digitalRead(x[i]);
+  }
+  
+  for(int i=0; i<4; i++){
+    y_mae[i]=y_yomi[i];
+    y_yomi[i]=digitalRead(y[i]);
+  }
 
-  if(digitalRead(y_1) == HIGH && bool_2==true){
-    if(digitalRead(x_1)== HIGH && bool_2==true){
+  
+
+  if(y_yomi[0] == HIGH && bool_2==true){
+    if(x_yomi[0]== HIGH){
       Serial.write("s,0,4,\0");
       delay(10);
-      bool_2 = false;
-    }else if(digitalRead(x_2)== HIGH ){
+      NOREAD_count++;
+    }else if(x_yomi[1]== HIGH ){
       Serial.write("s,1,5,\0");
-      bool_2 = false;
+      NOREAD_count++;
        delay(10);
-    }else if(digitalRead(x_3)== HIGH ){
+    }else if(x_yomi[2]== HIGH ){
       Serial.write("s,2,5,\0");
-      bool_2 = false;
+      NOREAD_count++;
        delay(10);
-    }else if(digitalRead(x_5)== HIGH ){
+    }else if(x_yomi[3]==HIGH ){
+      Serial.write("s,3,6,\0");
+      NOREAD_count++;
+       delay(10);
+    }else if(x_yomi[4]== HIGH ){
       Serial.write("s,4,6,\0");
-      bool_2 = false;
+      NOREAD_count++;
        delay(10);
-    }else if(digitalRead(x_6)== HIGH ){
+    }else if(x_yomi[5]== HIGH ){
       Serial.write("s,5,7,\0");
-      bool_2 = false;
+      NOREAD_count++;
        delay(10);
-    }else if(digitalRead(x_7)== HIGH ){
+    }else if(x_yomi[6]== HIGH ){
       Serial.write("s,6,6,\0");
-      bool_2 = false;
+      NOREAD_count++;
        delay(10);
-    }else if(digitalRead(x_8)== HIGH ){
+    }else if(x_yomi[7]== HIGH ){
       Serial.write("s,7,6,\0");
-      bool_2 = false;
+      NOREAD_count++;
        delay(10);
-    }else if(digitalRead(x_9)== HIGH ){
+    }else if(x_yomi[8]== HIGH ){
       Serial.write("s,8,5,\0");
-      bool_2 = false;
+      NOREAD_count++;
        delay(10);
-    }else if(digitalRead(x_10)== HIGH ){
+    }else if(x_yomi[9]== HIGH ){
       Serial.write("s,9,5,\0");
-      bool_2 = false;
+      NOREAD_count++;
        delay(10);
-    }else if(digitalRead(x_11)== HIGH ){
-      Serial.write("s,10,4,\0");
-      bool_2 = false;
+    }else if(x_yomi[10]== HIGH ){
+      Serial.write("s,a,4,\0");
+      NOREAD_count++;
        delay(10);
+    }else{
+      
     }
-  }else if(digitalRead(y_2)== HIGH && bool_2==true){
-    if(digitalRead(x_1)== HIGH && bool_2==true){
+
+    
+  }else if(y_yomi[1]== HIGH && bool_2==true){
+    if(x_yomi[0]== HIGH){
       Serial.write("s,0,5,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_2)== HIGH ){
+    }else if(x_yomi[1]== HIGH ){
       Serial.write("s,1,6,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_3)== HIGH ){
+    }else if(x_yomi[2]== HIGH ){
       Serial.write("s,2,6,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_5)== HIGH){
+     }else if(x_yomi[3]== HIGH ){
+      Serial.write("s,3,7,\0");
+       NOREAD_count++;
+     delay(10);
+    }else if(x_yomi[4]== HIGH){
       Serial.write("s,4,7,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_6)== HIGH){
+    }else if(x_yomi[5]== HIGH){
       Serial.write("s,5,8,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_7)== HIGH){
+    }else if(x_yomi[6]== HIGH){
       Serial.write("s,6,7,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_8)== HIGH){
+    }else if(x_yomi[7]== HIGH){
       Serial.write("s,7,7,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_9)== HIGH ){
+    }else if(x_yomi[8]== HIGH ){
       Serial.write("s,8,6,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_10)== HIGH ){
+    }else if(x_yomi[9]== HIGH ){
       Serial.write("s,9,6,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_11)== HIGH ){
-      Serial.write("s,10,5,\0");
-       bool_2 = false;
+    }else if(x_yomi[10]== HIGH ){
+      Serial.write("s,a,5,\0");
+       NOREAD_count++;
      delay(10);
+    }else{
+      
     }
     
     
-  }else if(digitalRead(y_3)== HIGH && bool_2 == true){
-    if(digitalRead(x_1)== HIGH){
+  }else if(y_yomi[2]== HIGH && bool_2 == true){
+    if(x_yomi[2]== HIGH){
       Serial.write("s,2,7,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_2)== HIGH){
+    }else if(x_yomi[3]== HIGH){
       Serial.write("s,3,8,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_3)== HIGH){
+    }else if(x_yomi[4]== HIGH){
       Serial.write("s,4,8,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_5)== HIGH){
+     }else if(x_yomi[5]== HIGH ){
+      Serial.write("s,5,9,\0");
+       NOREAD_count++;
+     delay(10);
+    }else if(x_yomi[6]== HIGH){
       Serial.write("s,6,8,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_6)== HIGH){
+    }else if(x_yomi[7]== HIGH){
       Serial.write("s,7,8,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_7)== HIGH){
+    }else if(x_yomi[8]== HIGH){
       Serial.write("s,8,7,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
+    }else{
+      
     }
-    bool_2 = false;
-     delay(10);
     
-  }else if(digitalRead(y_4) && bool_2 == true){
-    if(digitalRead(x_1)== HIGH){
+    
+  }else if(y_yomi[3] && bool_2 == true){
+    if(x_yomi[4]== HIGH){
       Serial.write("s,4,9,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_2)== HIGH){
-      Serial.write("s,5,10,\0");
-       bool_2 = false;
+    }else if(x_yomi[5]== HIGH){
+      Serial.write("s,5,a,\0");
+       NOREAD_count++;
      delay(10);
-    }else if(digitalRead(x_3)== HIGH){
+    }else if(x_yomi[6]== HIGH){
       Serial.write("s,6,9,\0");
-       bool_2 = false;
+       NOREAD_count++;
      delay(10);
+    }else{
+      
     }
 
      
-  }else if(digitalRead(x_1)== LOW && digitalRead(x_2)== LOW && digitalRead(x_3)== LOW && digitalRead(x_5)== LOW && digitalRead(x_6)== LOW && digitalRead(x_7)== LOW && digitalRead(x_8)== LOW && digitalRead(x_9)== LOW && digitalRead(x_10)== LOW && digitalRead(x_11)== LOW && bool_2 == true){
-    if(digitalRead(y_1)== HIGH){
-      Serial.write("s,3,6,\0");
-       bool_2 = false;
-     delay(10);
-    }else if(digitalRead(y_2)== HIGH){
-      Serial.write("s,3,7,\0");
-       bool_2 = false;
-     delay(10);
-    }else if(digitalRead(y_3)== HIGH){
-      Serial.write("s,3,8,\0");
-       bool_2 = false;
-     delay(10);
-    }
-    
-  }else if(digitalRead(y_4)== LOW &&digitalRead(y_3)== LOW &&digitalRead(y_1)== LOW &&digitalRead(y_2)== LOW && digitalRead(x_1)== LOW && digitalRead(x_2)== LOW && digitalRead(x_3)== LOW && digitalRead(x_5)== LOW && digitalRead(x_6)== LOW && digitalRead(x_7)== LOW && digitalRead(x_8)== LOW && digitalRead(x_9)== LOW && digitalRead(x_10)== LOW && digitalRead(x_11)== LOW && bool_2 == false){
+  }/*else if(y_yomi[3]== LOW &&y_yomi[2]== LOW &&y_yomi[1]== LOW &&y_yomi[0]== LOW && x_yomi[0]== LOW && x_yomi[1]== LOW && x_yomi[2]== LOW && x_yomi[4]== LOW && x_yomi[5]== LOW && x_yomi[6]== LOW && x_yomi[7]== LOW && x_yomi[8]== LOW && x_yomi[9]== LOW && x_yomi[10]== LOW && bool_2 == 0){
     bool_2 = true;
      delay(10);
+  }*/
+
+  if(NOREAD_count == NOREAD){
+    bool_2 = false;
+    
   }
-  }
-}
 
   
+  for(int i=0; i<11; i++){
+    if(i<4){
+      if(x_mae[i]!=x_yomi[i] || y_mae[i]!=y_yomi[i]){
+        bool_2 == true;
+        delay(2);
+      }
+    }else{
+      if(x_mae[i]!=x_yomi[i]){
+        bool_2 == true;
+        delay(2);
+      }
+    }
+  }
+  NOREAD_count = 0;
+  }
+  
+}

@@ -58,6 +58,7 @@ boolean push_4 = true;
 boolean not_aru = false;
 boolean not_serv = false;
 boolean toggle1 = true;
+boolean serv_1 = true;
 
 int mode=0;
 int str_ok = 2;
@@ -273,11 +274,13 @@ void draw(){
             break;
           case "0":
             if((ran_ok > 0 || mode!=3)&&(str_ok > 0 || mode!=2)){
+              if(area[dx][dy] == pl_color){
             String a=str(dx)+","+str(dy)+","+str(mode)+","+str(dir)+","+str(pl_color)+","+"\n";
             println(a);
             client.write(a);
+            
             println("serverにsend");
-          
+            serv_1 =false;
             if(mode==3){
               ran_ok -=1;
             }else if(mode == 2){
@@ -287,26 +290,45 @@ void draw(){
             }
             break;
             
-          default:
-            break;
           
+          
+            }
+            default:
+            break;
         }//bのやることおわり
        break;
         
       case "s":
         if(data_sp.length == 3){
-        dx = int(data_sp[1]);
-        dy = int(data_sp[2]);
+          switch(data_sp[1]){
+            case "a":
+              dx = 10;
+              break;
+            default:
+              dx = int(data_sp[1]);
+              break;
+              
+          }
+          
+          switch(data_sp[2]){
+            case "a":
+              dy = 10;
+              break;
+            default:
+              dy = int(data_sp[2]);
+          }
+        
         }
         break;
         
       default:
         break;
-     }
+      }
      }
      data = "";
      }
   }
+  
   
   
      
@@ -332,7 +354,7 @@ void draw(){
     
     
   }else if(scene == 1){
-    
+     push();
      background(haikei);
      //枠などの表示
        image(waku,(width/10)+180,(height/15));
@@ -449,7 +471,7 @@ void draw(){
           }
         }
       }
-      
+     pop();
      cursor_now();
      
      server_send();
@@ -649,8 +671,9 @@ void clientEvent(Client c){
       }
     }
     
-    
+    serv_1=true;
   }
+  
 }
 
 
