@@ -48,7 +48,7 @@ String pl2_sq = "0";
 Textfield t1;
 String input = "";
 
-int dir=0;
+int dir=1;
 
 boolean once=true;
 boolean push_1 = true;
@@ -60,7 +60,7 @@ boolean not_serv = false;
 boolean toggle1 = true;
 boolean serv_1 = true;
 
-int mode=0;
+int mode=1;
 int str_ok = 2;
 int ran_ok = 1;
 
@@ -380,6 +380,7 @@ void draw(){
     cp7.getController("toggle1").remove();
     once=false;
     }
+    
     x1 = absx;
     y1 = absy;
     for(int i=1;i<=6;i++){
@@ -493,16 +494,24 @@ void draw(){
      image(turn_img,0,height-300);
      textSize(250);
      text(turn,440,(height-170));
+     
      textSize(75);
+     text("straight     remaing",width-560,height-200);
+     text("random     remaing",width-560,height-100);
+     textSize(150);
+     text(str_ok,width-360,height-200);
+     text(ran_ok,width-380,height-100);
+     
+     
      switch(mode){
        case 1:
-         image(donut,width-560,height/2);
+         image(donut,width-560,(height/2)-50);
          break;
        case 2:
-         image(straight,width-545,height/2);
+         image(straight,width-545,(height/2)-50);
          break;
        case 3:
-         image(random,width-545,height/2);
+         image(random,width-545,(height/2)-50);
          break;
        default:
          break;
@@ -607,6 +616,14 @@ void clientEvent(Client c){
     pl1_sq = ss[5];
     pl2_sq = ss[6];
     turn = ss[7];
+    
+    if(pl_color == 1){
+      str_ok = int(ss[8]);
+      ran_ok = int(ss[9]);
+    }else if(pl_color == 2){
+       str_ok = int(ss[10]);
+       ran_ok = int(ss[11]);
+    }
     
     
     
@@ -891,12 +908,8 @@ void server_send(){
           println(a);
           client.write(a);
           println("serverにsend");
-          
-          if(mode==3){
-            ran_ok -=1;
-          }else if(mode == 2){
-            str_ok -=1;
-          }
+
+         
           //println("c");
           }
           

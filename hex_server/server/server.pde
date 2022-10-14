@@ -19,6 +19,11 @@ int pl1_sq=0;
 int pl2_sq=0;
 int myturn=1;
 int turn=1;
+int p1_str_ok=2;
+int p2_str_ok=2;
+int p1_ran_ok=1;
+int p2_ran_ok=1;
+
 
 int gamen;
 
@@ -78,6 +83,7 @@ void draw(){
           p2y = y;
         }
         conv_String(x,y,act,dir,pl);
+        
         if(myturn==1){
           myturn=2;
         }else{
@@ -85,6 +91,7 @@ void draw(){
         }
         turn+=1;
         state=1;//通常終了
+        
       }else{
         state=2;//あなたのターンではありません
       }
@@ -132,7 +139,9 @@ void draw(){
         }
       }
       
-      map+="&"+str(p1x)+","+str(p1y)+","+"&"+str(p2x)+","+str(p2y)+","+"&"+str(state)+'&'+str(myturn)+'&'+str(pl1_sq)+'&'+str(pl2_sq)+'&'+str(turn)+'&'+'\n';
+     
+      
+    map+="&"+str(p1x)+","+str(p1y)+","+"&"+str(p2x)+","+str(p2y)+","+"&"+str(state)+'&'+str(myturn)+'&'+str(pl1_sq)+'&'+str(pl2_sq)+'&'+str(turn)+'&'+str(p1_str_ok)+'&'+str(p1_ran_ok)+'&'+str(p2_str_ok)+'&'+str(p2_ran_ok)+'&'+'\n';
     System.out.println(map);
     System.out.println("clientにsend");
     server.write(map);
@@ -144,15 +153,21 @@ void draw(){
          
       }
       }
-         p1x=5;
-            p1y=10;
-        p2x=5;
-         p2y=0;
-         state=0;//state
-         pl1_sq=0;
-         pl2_sq=0;
-         myturn=1;
+       p1x=5;
+       p1y=10;
+       p2x=5;
+       p2y=0;
+       state=0;//state
+       pl1_sq=0;
+       pl2_sq=0;
+       myturn=1;
        turn=1;
+       p1_str_ok=2;
+       p2_str_ok=2;
+       p1_ran_ok=1;
+       p2_ran_ok=1;
+     
+       
 
       
     }
@@ -174,10 +189,23 @@ void conv_String(int x,int y,int act,int dir,int pl){
     case 2://straight
       System.out.println("straight");
       straight(x,y,dir,pl);
+      if(pl == 1){
+        p1_str_ok = p1_str_ok-1;
+      }else if(pl == 2){
+        p2_str_ok = p2_str_ok-1;
+      }
+      
+      
       break;
     case 3://random
       System.out.println("random");
       random_hex(x,y,pl);
+      if(pl == 1){
+        p1_ran_ok = p1_ran_ok-1;
+      }else if(pl == 2){
+        p2_ran_ok = p2_ran_ok-1;
+      }
+     
       break;
     default:
       break;

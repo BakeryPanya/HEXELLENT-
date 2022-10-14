@@ -48,7 +48,7 @@ String pl2_sq = "0";
 Textfield t1;
 String input = "";
 
-int dir=0;
+int dir=1;
 
 boolean once=true;
 boolean push_1 = true;
@@ -58,8 +58,11 @@ boolean push_4 = true;
 boolean not_aru = false;
 boolean not_serv = false;
 boolean toggle1 = true;
+boolean serv_1 = true;
 
-int mode=0;
+int mode=1;
+int str_ok = 2;
+int ran_ok = 1;
 
 PImage title ;
 PImage cursor;
@@ -205,7 +208,7 @@ void setup(){
      .getCaptionLabel()
      .setVisible(false);
      
-    
+   //ser = new Serial(this,"COM6", 9600);
     
   for (int i=0; i<num; i++) {
     print(comPort[i]+"     ");
@@ -223,6 +226,7 @@ void setup(){
   
   if(err_num==num){
     not_aru = true;
+    print("error!!!");
   }
    
 }
@@ -230,7 +234,8 @@ void setup(){
 void draw(){
   background(255);
   if(not_aru == false){
-  if ( ser.available() > 0) {            // 画面クリア
+  if ( ser.available() > 0) {  
+     println("来てますよ");// 画面クリア
      String data = ser.readString(); // 文字列を受信
      
      String[] data_sp = splitTokens(data,",");
@@ -268,32 +273,63 @@ void draw(){
             mode = 1;
             break;
           case "0":
+            if((ran_ok > 0 || mode!=3)&&(str_ok > 0 || mode!=2)){
+              if(area[dx][dy] == pl_color){
             String a=str(dx)+","+str(dy)+","+str(mode)+","+str(dir)+","+str(pl_color)+","+"\n";
             println(a);
             client.write(a);
+            
             println("serverにsend");
+            serv_1 =false;
+            if(mode==3){
+              ran_ok -=1;
+            }else if(mode == 2){
+              str_ok -=1;
+            }
+            //println("c");
+            }
             break;
             
-          default:
-            break;
           
+          
+            }
+            default:
+            break;
         }//bのやることおわり
        break;
         
       case "s":
         if(data_sp.length == 3){
-        dx = int(data_sp[1]);
-        dy = int(data_sp[2]);
+          switch(data_sp[1]){
+            case "a":
+              dx = 10;
+              break;
+            default:
+              dx = int(data_sp[1]);
+              break;
+              
+          }
+          
+          switch(data_sp[2]){
+            case "a":
+              dy = 10;
+              break;
+            default:
+              dy = int(data_sp[2]);
+          }
+        
         }
         break;
         
       default:
         break;
-     }
+      }
      }
      data = "";
      }
   }
+  
+  
   
      
      
@@ -318,24 +354,25 @@ void draw(){
     
     
   }else if(scene == 1){
-    
+     push();
      background(haikei);
      //枠などの表示
        image(waku,(width/10)+180,(height/15));
        image(vs,(width/2)-300,(height/20)-100);
+       
      //
     
     if(once == true){
       //
-     if(toggle1) {
-    pl_color = 1;
-    dx=5;
-    dy=10;
-  } else {
-    pl_color = 2;
-    dx=5;
-    dy=0;
-  }
+         if(toggle1) {
+        pl_color = 1;
+        dx=5;
+        dy=10;
+      } else {
+        pl_color = 2;
+        dx=5;
+        dy=0;
+      }
       //
      
     cp5.getController("start").remove();
@@ -343,6 +380,7 @@ void draw(){
     cp7.getController("toggle1").remove();
     once=false;
     }
+    
     x1 = absx;
     y1 = absy;
     for(int i=1;i<=6;i++){
@@ -435,7 +473,7 @@ void draw(){
           }
         }
       }
-      
+     pop();
      cursor_now();
      
      server_send();
@@ -456,16 +494,24 @@ void draw(){
      image(turn_img,0,height-300);
      textSize(250);
      text(turn,440,(height-170));
+     
      textSize(75);
+     text("straight     remaing",width-560,height-200);
+     text("random     remaing",width-560,height-100);
+     textSize(150);
+     text(str_ok,width-360,height-200);
+     text(ran_ok,width-380,height-100);
+     
+     
      switch(mode){
        case 1:
-         image(donut,width-560,height/2);
+         image(donut,width-560,(height/2)-50);
          break;
        case 2:
-         image(straight,width-545,height/2);
+         image(straight,width-545,(height/2)-50);
          break;
        case 3:
-         image(random,width-545,height/2);
+         image(random,width-545,(height/2)-50);
          break;
        default:
          break;
@@ -512,14 +558,14 @@ void draw(){
       if(pl_color == 1){
         image(win,(width/2)-500,(height/2)-450);
       }else{
-        image(lose,(width/2)-500,(height/2)-450);
+        image(lose,(width/2)-680,(height/2)-250);
       }
     
       }else if(int(pl1_sq)<int(pl2_sq)){
         if(pl_color == 2){
           image(win,(width/2)-500,(height/2)-450);
         }else{
-          image(lose,(width/2)-700,(height/2)-450);
+          image(lose,(width/2)-680,(height/2)-250);
         }
       }else{
         image(draw,(width/2)-350,(height/2)-200);
@@ -535,14 +581,15 @@ public void start(int Value) {
       String s="100,100,100,100,100,\n";
       client.write(s);
       println("O.K");
-      scene=1;
+      
+      
     }
     catch(Exception e) {
       not_serv = true;
       println("failed");
       
     }
-  
+  scene=1;
   Value=2;
 }
 
@@ -569,6 +616,14 @@ void clientEvent(Client c){
     pl1_sq = ss[5];
     pl2_sq = ss[6];
     turn = ss[7];
+    
+    if(pl_color == 1){
+      str_ok = int(ss[8]);
+      ran_ok = int(ss[9]);
+    }else if(pl_color == 2){
+       str_ok = int(ss[10]);
+       ran_ok = int(ss[11]);
+    }
     
     
     
@@ -618,6 +673,7 @@ void clientEvent(Client c){
     aru_map+=aite[0]+aite[1];
     aru_map+="\0";
     if(not_aru ==false){
+      println("send");
       ser.write(aru_map);
     }
     
@@ -633,8 +689,9 @@ void clientEvent(Client c){
       }
     }
     
-    
+    serv_1=true;
   }
+  
 }
 
 
@@ -846,12 +903,18 @@ void server_send(){
      
      if(keyPressed == true && push_3 == true){
        if(key=='0'){
+          if((ran_ok > 0 || mode!=3)&&(str_ok > 0 || mode!=2)){
           String a=str(dx)+","+str(dy)+","+str(mode)+","+str(dir)+","+str(pl_color)+","+"\n";
           println(a);
           client.write(a);
           println("serverにsend");
+
+         
           //println("c");
+          }
+          
        }
+       
        push_3=false;
      }
      
