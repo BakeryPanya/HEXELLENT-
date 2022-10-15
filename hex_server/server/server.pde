@@ -138,7 +138,7 @@ void draw(){
         
         }
       }
-      
+
      
       
     map+="&"+str(p1x)+","+str(p1y)+","+"&"+str(p2x)+","+str(p2y)+","+"&"+str(state)+'&'+str(myturn)+'&'+str(pl1_sq)+'&'+str(pl2_sq)+'&'+str(turn)+'&'+str(p1_str_ok)+'&'+str(p1_ran_ok)+'&'+str(p2_str_ok)+'&'+str(p2_ran_ok)+'&'+'\n';
@@ -214,6 +214,40 @@ void conv_String(int x,int y,int act,int dir,int pl){
 }
 
 void draw_space(int xd,int yd ,int col){
+  if(turn>=20){
+    if(area[xd][yd] != 1){
+      
+      if(xd>=0 && yd>=0 && xd<11){
+      if(xd<6){
+      if(yd<xd+6){
+        
+        if(col==1){
+          area[xd][yd] = 1;//赤色
+        }else{
+          area[xd][yd] = 2;//青色
+        }
+        
+      }
+    }else{
+      if(yd<10-(xd-6)){
+        
+         if(col==1){
+          area[xd][yd] = 1;//赤色
+        }else{
+          area[xd][yd] = 2;//青色
+        }
+        
+      }
+    }
+    
+    
+  }
+  }
+  
+    
+    
+  }else{
+    
   if(xd>=0 && yd>=0 && xd<11){
     if(xd<6){
       if(yd<xd+6){
@@ -237,6 +271,8 @@ void draw_space(int xd,int yd ,int col){
       }
     }
     
+  }
+  
   }
 }
 

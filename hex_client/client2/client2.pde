@@ -546,9 +546,106 @@ void draw(){
      
   }else if(scene == 3){
     push();
-    fill(255);
+       fill(255);
     textSize(300);
     background(haikei);
+    image(waku,(width/10)-250,(height/15));
+    //map表示
+    x1 = absx-300;
+    y1 = absy;
+    for(int i=1;i<=6;i++){
+      x = x1;
+      y = y1; 
+      for(int j=0; j<i+5; j++ ){
+        beginShape();
+        //特殊エリア色付け
+        if(j==2 &&(( 1<=i && i<=2)||(9<=i && i<=10))){//y=2の2point
+                 stroke(0);
+                fill(area_col);
+              }else if(j==3 &&(( 1<=i && i<=4)||(7<=i && i<=10))){
+                 stroke(0);
+                fill(area_col);
+              }else if(j==4 &&( 2<=i && i<=9)){
+                 stroke(0);
+                fill(area_col);
+              }else if(j==5 &&( 4<=i && i<=7)){
+                 stroke(0);
+                fill(area_col);
+              }else if(j==6 && i==6){
+                stroke(0);
+                fill(area_col);
+              }else{
+                stroke(0);
+                fill(255);
+              }
+        //ここまで ごり押しのため無駄なコードがある
+        vertex(x*mag,y*mag);
+        vertex((x+20)*mag,y*mag);
+        vertex((x+30)*mag,(y+10*sqrt(3))*mag);
+        vertex((x+20)*mag,(y+20*sqrt(3))*mag);
+        vertex(x*mag,(y+20*sqrt(3))*mag);
+        vertex((x-10)*mag,(y+10*sqrt(3))*mag);
+        endShape(CLOSE);
+        y+=(20*sqrt(3));
+      
+      }
+      x1 +=30;
+      y1 -=10*sqrt(3);
+    }
+  
+  
+    y1+=20*sqrt(3);
+  
+    for(int i=5;i>=1;i--){
+      x = x1;
+      y = y1; 
+      for(int j=1; j<=i+5; j++ ){
+        beginShape();
+        //特殊エリア色付け
+        if(j==3 &&( i==2 || i==1)){//y=2の2point
+                 stroke(0);
+                fill(area_col);
+              }else if(j==4 &&(i==4||i==3||i==2||i==1)){
+                stroke(0);
+                fill(area_col);
+              }else if(j==5 &&(i==5||i==4||i==3||i==2)){
+                stroke(0);
+                fill(area_col);
+          
+              }else if(j==6 &&(i==5||i==4 )){
+                stroke(0);
+                fill(area_col);
+              }else if(j==6 && i==5){
+                stroke(0);
+                fill(area_col);
+              }else{
+                stroke(0);
+                fill(255);
+              }
+        //ここまで
+        vertex(x*mag,y*mag);
+        vertex((x+20)*mag,y*mag);
+        vertex((x+30)*mag,(y+10*sqrt(3))*mag);
+        vertex((x+20)*mag,(y+20*sqrt(3))*mag);
+        vertex(x*mag,(y+20*sqrt(3))*mag);
+        vertex((x-10)*mag,(y+10*sqrt(3))*mag);
+        endShape(CLOSE);
+        y+=20*sqrt(3);
+      }
+      x1 +=30;
+      y1 +=10*sqrt(3);
+    }
+    ////
+    for(int m=0;m<11;m++){
+        for(int n=0;n<11;n++){
+          if(area[m][n] >= 1){
+            draw_space(m,n,area[m][n]);
+          }
+        }
+      }
+     
+    
+    //ここまで
     image(vs,(width/2)-300,(height/20)-100);
     text(pl2_sq,540,(height/6)+50);
     text(pl1_sq,width-(650),(height/6)+50);
@@ -556,19 +653,19 @@ void draw(){
     //text(pl1_sq+"vs"+pl2_sq,300,600);
     if(int(pl1_sq)>int(pl2_sq)){
       if(pl_color == 1){
-        image(win,(width/2)-500,(height/2)-450);
+        image(win,(width/2)-100,(height/2)-350);
       }else{
-        image(lose,(width/2)-680,(height/2)-250);
+        image(lose,(width/2)-280,(height/2)-150);
       }
     
       }else if(int(pl1_sq)<int(pl2_sq)){
         if(pl_color == 2){
-          image(win,(width/2)-500,(height/2)-450);
+          image(win,(width/2)-100,(height/2)-350);
         }else{
-          image(lose,(width/2)-680,(height/2)-250);
+          image(lose,(width/2)-280,(height/2)-150);
         }
       }else{
-        image(draw,(width/2)-350,(height/2)-200);
+        image(draw,(width/2)+50,(height/2)-100);
       }
     pop();
   }
@@ -698,6 +795,10 @@ void clientEvent(Client c){
 void draw_space(int xd,int yd ,int col){
   
   push();
+  if(scene == 3){
+    int a=300;
+    absx = absx - a;
+    
   if(xd>=0 && yd>=0 && xd<11){
     if(xd<6){
       if(yd<xd+6){
@@ -736,6 +837,52 @@ void draw_space(int xd,int yd ,int col){
          endShape(CLOSE);
       }
     }
+    
+  }
+  absx=absx + a;
+  }else{
+    
+    if(xd>=0 && yd>=0 && xd<11){
+    if(xd<6){
+      if(yd<xd+6){
+        float cx=absx+xd*30;
+        float cy=absy-(xd*10*sqrt(3))+yd*20*sqrt(3);
+        beginShape();
+        if(col==1){
+          fill(p1_col);
+        }else if(col==2){
+          fill(p2_col);
+        }
+        vertex(cx*mag,cy*mag);
+        vertex((cx+20)*mag,cy*mag);
+        vertex((cx+30)*mag,(cy+10*sqrt(3))*mag);
+        vertex((cx+20)*mag,(cy+20*sqrt(3))*mag);
+        vertex(cx*mag,(cy+20*sqrt(3))*mag);
+        vertex((cx-10)*mag,(cy+10*sqrt(3))*mag);
+        endShape(CLOSE);
+      }
+    }else{
+      if(yd<10-(xd-6)){
+         float cx=absx+xd*30;
+         float cy=absy+(xd*10*sqrt(3))+yd*20*sqrt(3)-100*sqrt(3);
+         beginShape();
+         if(col==1){
+          fill(p1_col);
+        }else{
+          fill(p2_col);
+        }
+         vertex(cx*mag,cy*mag);
+         vertex((cx+20)*mag,cy*mag);
+         vertex((cx+30)*mag,(cy+10*sqrt(3))*mag);
+         vertex((cx+20)*mag,(cy+20*sqrt(3))*mag);
+         vertex(cx*mag,(cy+20*sqrt(3))*mag);
+         vertex((cx-10)*mag,(cy+10*sqrt(3))*mag);
+         endShape(CLOSE);
+      }
+    }
+    
+    
+  }
     
   }
   pop();
