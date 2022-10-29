@@ -241,6 +241,7 @@ void draw_space(int xd,int yd ,int col){
     }
     
     
+    
   }
   }
   
